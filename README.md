@@ -1,2 +1,2 @@
 # ClusterPy
-Gauge cluster designed for Raspberry Pi
+Python based gauge cluster designed for Raspberry Pi
