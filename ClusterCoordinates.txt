@@ -1,0 +1,11 @@
+top left corner display:
+1, -42
+
+first Digi:
+5, -46
+
+second digi:
+39, -46
+
+third digi:
+74, -46
