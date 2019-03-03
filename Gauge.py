@@ -14,79 +14,82 @@
 
 import os
 from PIL import Image, ImageTk
-
-"""------Constants------"""
-STR_WorkingDir = os.getcwd()
-
-degreesPerUnitIMP = -9.0
-degreesPerUnitEGT = -(9.0/40.0)
-degreesPerUnitVolt = -10
-
-class GaugeType:
-    Boost = 1
-    Pyro = 2
-    Volt = 3
+import numpy as np
+import math
+from Config import *
 
 class Gauge:
-    
-    def __init__(self, background, gaugeType):
+
+    centre = None
+    needleDimensions = None
+    degreesPerUnit = None
+    needleOffset = None
+    decimalPrecision = None
+
+    displayOffset = None
+    segOffset = None
+
+    outsideSeg = None
+    middleSeg = None
+
+    def __init__(self, canvas):
         
+        self.canvas = canvas
+
         self.value = 0
-        self.angle = 45
+        self.angle = 0
+        self.needle = 0
 
-        self.gaugeType = gaugeType
+        self.Configure()
 
-        if (self.gaugeType == GaugeType.Boost):
-            self.degreesPerUnit = degreesPerUnitIMP
-            
-        elif (self.gaugeType == GaugeType.Pyro):
-            self.degreesPerUnit = degreesPerUnitEGT
-            
-        elif (self.gaugeType == GaugeType.Volt):
-            self.degreesPerUnit = degreesPerUnitVolt
+    def Configure(self):
 
-        else:
-            raise TypeError("Unknown Gauge type: {}".format(self.gaugeType));
+        try:
+            self.DrawNeedle()
+            self.DrawDigitalDisplay()
+            self.RotateNeedle(self.needleOffset)
+        except:
+            raise ValueError("User must set:\n\ncentre, needleDimensions, degreesPerUnit, needleOffset, decimalPrecision, displayOffset, segOffset, outsideSeg, middleSeg\n\nBefore Gauge.__init__()")
 
-        self.Background = background
+    def DrawNeedle(self):
 
-        self.InitializeImages()
+        l1 = self.needleDimensions[0] * 0.8
+        l2 = self.needleDimensions[0] * 0.2
+        w = self.needleDimensions[1] * 0.5
 
-        self.Needle = ImageTk.PhotoImage(self.needlePNG)
-        self.Digital = [self.digitalImages[10], self.digitalImages[10], self.digitalImages[10]]
+        self.p1 = np.array([-l1, w, 1])
+        self.p2 = np.array([-l1, -w, 1])
+        self.p3 = np.array([l2, -w, 1])
+        self.p4 = np.array([l2, w, 1])
 
-    def InitializeImages(self):
+        self.p1 = self.p1.reshape(3,1)
+        self.p2 = self.p2.reshape(3,1)
+        self.p3 = self.p3.reshape(3,1)
+        self.p4 = self.p4.reshape(3,1)
+
+    def DrawDigitalDisplay(self):
         
-        if (self.gaugeType == GaugeType.Boost or self.gaugeType == GaugeType.Pyro):
-            self.needlePNG = Image.open(STR_WorkingDir + "/Images/GaugeNeedle.png")
-            
-            self.digitalImages = [\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Zero.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/One.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Two.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Three.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Four.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Five.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Six.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Seven.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Eight.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Nine.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Empty.png")]
-        else:
-            self.needlePNG = Image.open(STR_WorkingDir + "/Images/VoltNeedle.png")
-            
-            self.digitalImages = [\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Zero-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/One-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Two-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Three-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Four-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Five-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Six-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Seven-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Eight-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Nine-Small.png"),\
-            ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/Empty-Small.png")]
+        digitOffset = self.displayOffset + self.centre
+
+        xflip = np.array([[-1,0],[0,1]])
+        yflip = np.array([[1,0],[0,-1]])
+        flop = np.array([[0,1],[1,0]])
+
+        self.digit = []
+        for i in range(3):
+            offset = self.segOffset + digitOffset[i]
+            disp = []
+            disp.append((self.outsideSeg + offset[0]).tolist())
+            disp.append((self.outsideSeg + offset[1]).tolist())
+            disp.append((self.outsideSeg.dot(flop).dot(yflip) + offset[2]).tolist())
+            disp.append((self.outsideSeg.dot(xflip) + offset[3]).tolist())
+            disp.append((self.outsideSeg.dot(xflip) + offset[4]).tolist())
+            disp.append((self.outsideSeg.dot(flop) + offset[5]).tolist())
+            disp.append((self.middleSeg + offset[6]).tolist())
+        
+            self.digit.append([])
+            for j in range(7):
+                self.digit[i].append(self.canvas.create_polygon(disp[j], fill="#000"))
 
     def UpdateValue(self, value):
 
@@ -97,33 +100,53 @@ class Gauge:
 
     def UpdateDigitalDisplay(self):
 
-        value = self.value
+        value = self.value * (10**self.decimalPrecision)
 
-        if (self.gaugeType == GaugeType.Boost or self.gaugeType == GaugeType.Volt):
-            value *= 10
+        number = []
+        number.append(int(value / 100))
+        number.append(int((value / 10) - (number[0] * 10)))
+        number.append(int(value % 10))
 
-        first = int(value / 100)
-        second = int((value / 10) - (first * 10))
-        third = int(value % 10)
+        if (number[0] <= 0):
+            number[0] = 10
+        elif (number[0] > 9):
+            number[0] = 9
+            number[1] = 9
+            number[2] = 9
 
-        if (first <= 0):
-            first = 10
-        elif (first > 9):
-            first = 9
+        if (self.decimalPrecision == 0 and number[1] == 0):
+            number[1] = 10
 
-        if (self.gaugeType == GaugeType.Pyro and second == 0):
-            second = 10
-
-        self.Digital[0] = self.digitalImages[first]
-        self.Digital[1] = self.digitalImages[second]
-        self.Digital[2] = self.digitalImages[third]
+        for i in range(3):
+            for j in range(7):
+                if INTARR_DigitCode[number[i]][j]:
+                    self.canvas.itemconfig(self.digit[i][j], state = "normal")
+                else:
+                    self.canvas.itemconfig(self.digit[i][j], state = "hidden")
         
 
     def UpdateNeedle(self):
 
-        self.angle = (self.value * self.degreesPerUnit)
+        self.angle = (self.value * self.degreesPerUnit) + self.needleOffset
 
-        if (self.gaugeType != GaugeType.Volt):
-            self.angle += 45
+        self.RotateNeedle(self.angle)
+
+    def RotateNeedle(self, degrees):
+
+        self.angle = degrees
+
+        if (self.needle != 0):
+            self.canvas.delete(self.needle)
+
+        s = math.sin(degrees * FLOAT_Radians2Degrees)
+        c = math.cos(degrees * FLOAT_Radians2Degrees)
         
-        self.Needle = ImageTk.PhotoImage(self.needlePNG.rotate(self.angle))
+        rotationMatrix = np.array([[c, -s, self.centre[0]], [s, c, self.centre[1]], [0, 0, 1]])
+    
+        newP1 = rotationMatrix.dot(self.p1).tolist()
+        newP2 = rotationMatrix.dot(self.p2).tolist()
+        newP3 = rotationMatrix.dot(self.p3).tolist()
+        newP4 = rotationMatrix.dot(self.p4).tolist()
+
+        self.needle = self.canvas.create_polygon(newP1[0:2], newP2[0:2], newP3[0:2], newP4[0:2], outline="#000", fill="#F00", width=2)
+
