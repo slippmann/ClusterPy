@@ -104,6 +104,9 @@ venv.bak/
 .mypy_cache/
 
 # visual studio
-.sln
-.pyproj
-/.vs
+*.sln
+*.pyproj
+.vs/
+
+# legacy images
+Images/old
