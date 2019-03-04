@@ -26,9 +26,9 @@ from Config import *
 #creating the GUI and its components
 class GaugeCluster(Frame):
     
-    intakePressure = 25
-    exhaustTemperature = 1000
-    voltage = 18
+    intakePressure = 16.4
+    exhaustTemperature = 762
+    voltage = 14.4
 
     loopCounter = 0
         
@@ -38,8 +38,8 @@ class GaugeCluster(Frame):
         self.master = master
 
         self.grid()
-	
-	if (DEBUG != 1):
+
+        if (DEBUG != 1):
         	self.CarManager = Manager()
 
         self.InitializeImages()
@@ -97,22 +97,22 @@ class GaugeCluster(Frame):
         temp = self.voltage
 
         if (DEBUG != 1):
-        	self.voltage = self.CarManager.UpdateVoltage()
+            self.voltage = self.CarManager.UpdateVoltage()
 
-        	if (temp == self.voltage):
-            		return
+            if (temp == self.voltage):
+                return
 
         self.voltGauge.UpdateValue(self.voltage)
 
     def UpdateBoostGauge(self):
 
         temp = self.intakePressure
-	
-	if (DEBUG != 1):
-        	self.intakePressure = self.CarManager.UpdatePressure()
+        
+        if (DEBUG != 1):
+            self.intakePressure = self.CarManager.UpdatePressure()
 
-        	if (temp == self.intakePressure):
-            		return
+            if (temp == self.intakePressure):
+                return
 
         self.boostGauge.UpdateValue(self.intakePressure)
         
@@ -121,10 +121,10 @@ class GaugeCluster(Frame):
         temp = self.exhaustTemperature
         
         if (DEBUG != 1):
-        	self.exhaustTemperature = self.CarManager.UpdateTemperature()
+            self.exhaustTemperature = self.CarManager.UpdateTemperature()
 
-        	if (temp == self.exhaustTemperature):
-            		return
+            if (temp == self.exhaustTemperature):
+                return
         
         self.pyroGauge.UpdateValue(self.exhaustTemperature)
 
