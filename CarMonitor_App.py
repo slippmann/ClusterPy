@@ -38,8 +38,9 @@ class GaugeCluster(Frame):
         self.master = master
 
         self.grid()
-
-        self.CarManager = Manager()
+	
+	if (DEBUG != 1):
+        	self.CarManager = Manager()
 
         self.InitializeImages()
 
@@ -95,21 +96,23 @@ class GaugeCluster(Frame):
 
         temp = self.voltage
 
-        self.voltage = self.CarManager.UpdateVoltage()
+        if (DEBUG != 1):
+        	self.voltage = self.CarManager.UpdateVoltage()
 
-        if (temp == self.voltage):
-            return
+        	if (temp == self.voltage):
+            		return
 
         self.voltGauge.UpdateValue(self.voltage)
 
     def UpdateBoostGauge(self):
 
         temp = self.intakePressure
+	
+	if (DEBUG != 1):
+        	self.intakePressure = self.CarManager.UpdatePressure()
 
-        self.intakePressure = self.CarManager.UpdatePressure()
-
-        if (temp == self.intakePressure):
-            return
+        	if (temp == self.intakePressure):
+            		return
 
         self.boostGauge.UpdateValue(self.intakePressure)
         
@@ -117,10 +120,11 @@ class GaugeCluster(Frame):
 
         temp = self.exhaustTemperature
         
-        self.exhaustTemperature = self.CarManager.UpdateTemperature()
+        if (DEBUG != 1):
+        	self.exhaustTemperature = self.CarManager.UpdateTemperature()
 
-        if (temp == self.exhaustTemperature):
-            return
+        	if (temp == self.exhaustTemperature):
+            		return
         
         self.pyroGauge.UpdateValue(self.exhaustTemperature)
 

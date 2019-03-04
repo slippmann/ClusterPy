@@ -2,6 +2,8 @@ from math import pi
 import os
 import numpy as np
 
+DEBUG = 1
+
 """------Coodinates------"""
 backgroundCentre = (400, 240)
 boostGaugeCentre = (180, 280)
