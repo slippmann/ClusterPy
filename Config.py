@@ -2,7 +2,51 @@ from math import pi
 import os
 import numpy as np
 
-DEBUG = 1
+DEBUG = 0
+
+"""------Functions-------"""
+def CreateSegment(size, dims):
+    length = dims[0]
+    width = dims[1]
+
+    segOutside = np.array([                         # Layout for segments around the outside of the display (0,0 is top left. positive y is downward) 
+        [0      ,   0               ],              #                          
+        [0      ,   length          ],              #  0                   
+        [width  ,   length-width    ],              #  |\       
+        [width  ,   width           ]               #  | 3               
+        ])                                          #  | | 
+                                                    #  | 2 
+                                                    #  |/ 
+                                                    #  1 
+
+    segMiddle = np.array([                         # Layout for the segment in the middle of the display (0,0 is top left. positive y is downward)
+        [0              ,  width/2  ],              #
+        [width/2        ,  0        ],              #  
+        [length-width/2 ,  0        ],              #     1________2
+        [length         ,  width/2  ],              #  0 < ________ > 3
+        [length-width/2 ,  width    ],              #     5        4
+        [width/2        ,  width    ]               #
+        ])                                          #
+
+    padding = (                                     # Space from edge of display area to start of a segment
+        (size[0] - segOutside[1][1]) / 2,           # x padding
+        ((size[1] / 2) - segOutside[1][1]) / 2      # y padding
+        )
+
+    segOffset = np.array([                                         
+        [0          ,   padding[1]                  ],      # Offsets for each segment (0,0 is top left. positive y is downward)                          
+        [0          ,   ((size[1]+padding[1])/2)    ],      #    _______        
+        [padding[0] ,   size[1]                     ],      #   \___5___/                         
+        [size[0]    ,   ((size[1]+padding[1])/2)    ],      # |\         /|        
+        [size[0]    ,   padding[1]                  ],      # |0|       |4|                          
+        [padding[0] ,   0                           ],      # |/  _____  \|                                   
+        [padding[0] ,   ((size[1]/2)-width/2)       ]       #    <__6__>          
+        ])                                                  # |\         /|
+                                                            # |1|       |3|
+                                                            # |/  _____  \|
+                                                            #    /__2__\
+
+    return [segOutside, segMiddle, segOffset]
 
 """------Coodinates------"""
 backgroundCentre = (400, 240)
@@ -10,20 +54,28 @@ boostGaugeCentre = (180, 280)
 pyroGaugeCentre = (620, 280)
 voltGaugeCentre = (400, 150)
 
-#26x48
-lDisplayOffset = np.array([[6, 48], [40, 48], [74, 48]])
+# 7-Segment size 26x48px
+dispArea = (26,48)
+segDims = (22,4)
+[lSegOutside, lSegMiddle, lSegOffset] = CreateSegment(dispArea,segDims)
 
-lSegOffset = np.array([[0,3],[0,25],[3,48],[26,25],[26,3],[3,0],[3,22]])
-#lSegOutside = np.array([[2,0],[0,0],[0,20],[2,20],[4,18],[4,2]])
-lSegOutside = np.array([[0,0],[0,20],[4,16],[4,4]])
-lSegMiddle = np.array([[0,2],[2,0],[18,0],[20,2],[18,4],[2,4]])
+lDisplayOffset = np.array([     # Offset from gauge center
+    [6, 48],                    # First digit
+    [40, 48],                   # Second digit
+    [74, 48]                    # Third digit
+    ])
 
-#18x32
-sDisplayOffset = np.array([[-12, 26], [10, 26], [32, 26]])
 
-sSegOffset = np.array([[0,2],[0,17],[2,32],[18,17],[18,2],[2,0],[2,15]])
-sSegOutside = np.array([[0,0],[3,3],[3,11],[0,14]])
-sSegMiddle = np.array([[0,1],[1,0],[13,0],[14,1],[13,3],[1,3]])
+# 7-Segment size 18x32px
+dispArea = (18,32)
+segDims = (14,3)
+[sSegOutside, sSegMiddle, sSegOffset] = CreateSegment(dispArea,segDims)
+
+sDisplayOffset = np.array([     # See above for description
+    [-12, 26],
+    [10, 26],
+    [32, 26]
+    ])
 
 """------Dimensions-----"""
 largeNeedleDimensions = (152, 8)
@@ -33,7 +85,7 @@ smallNeedleDimensions = (102, 6)
 INT_StartUpDelayMilliseconds = 1000
 INT_StartCycles = 100
 INT_RefreshDelayMilliseconds = 10
-STR_WorkingDir = os.getcwd()
+STR_WorkingDir = os.path.dirname(os.path.realpath(__file__))
 
 FLOAT_BoostDegreesPerUnit = 9.0
 FLOAT_PyroDegreesPerUnit = (9.0/40.0)
