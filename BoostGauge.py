@@ -17,4 +17,8 @@ class BoostGauge(Gauge):
         self.outsideSeg = lSegOutside
         self.middleSeg = lSegMiddle
 
+        # Arrays
+        self.digitPoly = [ [ None for j in range(7) ] for i in range(3) ]
+        self.digitNum =  [ None for i in range(3) ]
+
         super().__init__(canvas)

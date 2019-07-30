@@ -25,6 +25,8 @@ app = GaugeCluster(root)
 
 root.overrideredirect(True)
 root.bind("<Button-1>", lambda e: app.Dispose())
+root.bind("<Up>", lambda e: app.Demo())
+root.focus_set()
 
 app.UpdateClusterLoop()
 

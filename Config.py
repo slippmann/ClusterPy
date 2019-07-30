@@ -2,7 +2,7 @@ from math import pi
 import os
 import numpy as np
 
-DEBUG = 0
+DEBUG = 1
 
 """------Functions-------"""
 def CreateSegment(size, dims):
@@ -91,13 +91,13 @@ FLOAT_BoostDegreesPerUnit = 9.0
 FLOAT_PyroDegreesPerUnit = (9.0/40.0)
 FLOAT_VoltDegreesPerUnit = 10
 
-FLOAT_Radians2Degrees = pi / 180
+FLOAT_Degrees2Radians = pi / 180
 
 INTARR_DigitCode = [\
             (1,1,1,1,1,1,0),\
             (0,0,0,1,1,0,0),\
             (0,1,1,0,1,1,1),\
-            (0,0,1,1,1,1,0),\
+            (0,0,1,1,1,1,1),\
             (1,0,0,1,1,0,1),\
             (1,0,1,1,0,1,1),\
             (1,1,1,1,0,1,1),\

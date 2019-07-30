@@ -26,14 +26,23 @@ from Config import *
 #creating the GUI and its components
 class GaugeCluster(Frame):
     
-    intakePressure = 16.4
-    exhaustTemperature = 762
-    voltage = 14.4
+    intakePressure = 0
+    exhaustTemperature = 0
+    voltage = 0
 
     loopCounter = 0
         
     def __init__(self, master):
+        """
+        Initialize gauge cluster.
         
+        Inputs:
+            master - tkinter master
+
+        Returns:
+            None
+        """
+
         Frame.__init__(self, master)
         self.master = master
 
@@ -51,6 +60,15 @@ class GaugeCluster(Frame):
         self.isReady = False
 
     def InitializeImages(self):
+        """
+        Loads all of the application images and places them on the tkinter canvas.
+
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
 
         self.backgroundImage = ImageTk.PhotoImage(file = STR_WorkingDir + "/Images/ClusterBackground.png")
         
@@ -67,6 +85,16 @@ class GaugeCluster(Frame):
         self.cluster.pack()
         
     def UpdateClusterLoop(self):
+        """
+        The main loop of the application.
+        Reading sensors and updating gauge displays.
+
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
 
         if self.isReady == False:
             if self.loopCounter == 0:
@@ -77,7 +105,12 @@ class GaugeCluster(Frame):
             self.Startup(self.loopCounter)
             
             if self.loopCounter >= INT_StartCycles:
-                self.loopCounter = 0;
+                self.loopCounter = 0
+                
+                self.boostGauge.UpdateValue(self.intakePressure)
+                self.pyroGauge.UpdateValue(self.exhaustTemperature)
+                self.voltGauge.UpdateValue(self.voltage)
+
                 self.isReady = True
         
         else:
@@ -93,42 +126,67 @@ class GaugeCluster(Frame):
         self.after(INT_RefreshDelayMilliseconds, self.UpdateClusterLoop)
 
     def UpdateVoltGauge(self):
+        """
+        Get new value from sensors and update the gauge display.
+        Dont update display if the sensor data has not changed.
 
-        temp = self.voltage
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
 
         if (DEBUG != 1):
             self.voltage = self.CarManager.UpdateVoltage()
 
-            if (temp == self.voltage):
-                return
-
         self.voltGauge.UpdateValue(self.voltage)
 
     def UpdateBoostGauge(self):
+        """
+        Get new value from sensors and update the gauge display.
+        Dont update display if the sensor data has not changed.
 
-        temp = self.intakePressure
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
         
         if (DEBUG != 1):
             self.intakePressure = self.CarManager.UpdatePressure()
 
-            if (temp == self.intakePressure):
-                return
-
         self.boostGauge.UpdateValue(self.intakePressure)
         
     def UpdatePyroGauge(self):
+        """
+        Get new value from sensors and update the gauge display.
+        Dont update display if the sensor data has not changed.
 
-        temp = self.exhaustTemperature
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
         
         if (DEBUG != 1):
             self.exhaustTemperature = self.CarManager.UpdateTemperature()
-
-            if (temp == self.exhaustTemperature):
-                return
         
         self.pyroGauge.UpdateValue(self.exhaustTemperature)
 
     def Startup(self, counter):
+        """
+        Start up sequence for the gauges. 
+        
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
+
         half = INT_StartCycles / 2
         stepL = 225 / half
         stepS = 180 / half
@@ -146,6 +204,36 @@ class GaugeCluster(Frame):
             self.voltGauge.RotateNeedle(angle2)
             self.boostGauge.RotateNeedle(angle1)
             self.pyroGauge.RotateNeedle(angle1)
+        
+        if (counter % 8 == 0):
+            segmentNumber = (counter / 8)
+            self.voltGauge.ShowSegment((segmentNumber + 0) % 6)
+            self.boostGauge.ShowSegment((segmentNumber + 2) % 6)
+            self.pyroGauge.ShowSegment((segmentNumber + 4) % 6)
             
     def Dispose(self):
+        """
+        Clean up app and destroy tkinter window
+
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
         self.master.destroy()
+
+    def Demo(self):
+        """
+        Demo the gauges for debugging purposes
+
+        Inputs:
+            None
+
+        Returns:
+            None
+        """
+        if (DEBUG == 1) and (self.isReady):
+            self.intakePressure = self.intakePressure + 0.2 if (self.intakePressure + 0.2 <= 25) else 0
+            self.exhaustTemperature = self.exhaustTemperature + 2 if (self.exhaustTemperature + 2 <= 1000) else 0
+            self.voltage = self.voltage + 0.2 if (self.voltage + 0.2 <= 18) else 0
