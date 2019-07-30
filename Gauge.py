@@ -77,8 +77,8 @@ class Gauge:
             self.BuildDigitalDisplay()
 
             self.CalculateDigitalDisplay()
-
             self.CalculateNeedle()
+
             self.DrawNeedle()
         except:
             raise ValueError("User must set:\n\ncentre, needleDimensions, degreesPerUnit, needleOffset, decimalPrecision, displayOffset, segOffset, outsideSeg, middleSeg\n\nBefore Gauge.__init__()")
@@ -204,7 +204,8 @@ class Gauge:
             self.digitNum[1] = 9
             self.digitNum[2] = 9
 
-        if (self.decimalPrecision == 0 and self.digitNum[1] == 0):
+        if (self.decimalPrecision == 0 and 
+			self.digitNum[0] == 10 and self.digitNum[1] == 0):
             self.digitNum[1] = 10             
 
     def DrawNeedle(self):
@@ -281,7 +282,7 @@ class Gauge:
         self.CalculateNeedle(degrees)
         self.DrawNeedle()
 
-    def UpdateValue(self, value):
+    def UpdateValue(self, value, override=False):
         """
         Update the value of the gauge. 
         This will update the needle and the digital display 
@@ -294,7 +295,7 @@ class Gauge:
             None
         """
        
-        if (value == self.value):
+        if (value == self.value and override == False):
             return
         
         self.value = value

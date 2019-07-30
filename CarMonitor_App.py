@@ -107,9 +107,9 @@ class GaugeCluster(Frame):
             if self.loopCounter >= INT_StartCycles:
                 self.loopCounter = 0
                 
-                self.boostGauge.UpdateValue(self.intakePressure)
-                self.pyroGauge.UpdateValue(self.exhaustTemperature)
-                self.voltGauge.UpdateValue(self.voltage)
+                self.boostGauge.UpdateValue(self.intakePressure, override=True)
+                self.pyroGauge.UpdateValue(self.exhaustTemperature, override=True)
+                self.voltGauge.UpdateValue(self.voltage, override=True)
 
                 self.isReady = True
         
